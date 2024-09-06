@@ -6,14 +6,7 @@ import 'package:intl/intl.dart';
 import 'input_dropdown.dart';
 
 class DateTimePicker extends StatelessWidget {
-  const DateTimePicker(
-      {Key? key,
-      this.labelText,
-      this.selectedDate,
-      this.selectedTime,
-      this.selectDate,
-      this.selectTime,
-      this.enableTime = true})
+  const DateTimePicker({Key? key, this.labelText, this.selectedDate, this.selectedTime, this.selectDate, this.selectTime, this.enableTime = true})
       : super(key: key);
 
   final String? labelText;
@@ -26,9 +19,7 @@ class DateTimePicker extends StatelessWidget {
   Future<void> _selectDate(BuildContext context) async {
     final picked = await showDatePicker(
         context: context,
-        initialDate: selectedDate != null
-            ? DateTime.parse(selectedDate.toString())
-            : DateTime.now(),
+        initialDate: selectedDate != null ? DateTime.parse(selectedDate.toString()) : DateTime.now(),
         firstDate: DateTime(2015, 8),
         lastDate: DateTime(2101));
     if (picked != null && picked != selectedDate && selectDate != null) {
@@ -38,14 +29,13 @@ class DateTimePicker extends StatelessWidget {
 
   Future<void> _selectTime(BuildContext context) async {
     if (selectedTime == null) return;
-    final picked =
-        await showTimePicker(context: context, initialTime: selectedTime!);
+    final picked = await showTimePicker(context: context, initialTime: selectedTime!);
     if (picked != null && picked != selectedTime) selectTime!(picked);
   }
 
   @override
   Widget build(BuildContext context) {
-    final valueStyle = Theme.of(context).textTheme.headline6;
+    final valueStyle = Theme.of(context).textTheme.headlineMedium;
     return Row(
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
@@ -53,9 +43,7 @@ class DateTimePicker extends StatelessWidget {
           flex: 4,
           child: InputDropdown(
             labelText: labelText,
-            valueText: selectedDate == null
-                ? ''
-                : DateFormat.yMMMd().format(selectedDate as DateTime),
+            valueText: selectedDate == null ? '' : DateFormat.yMMMd().format(selectedDate as DateTime),
             valueStyle: valueStyle,
             onPressed: () {
               _selectDate(context);
