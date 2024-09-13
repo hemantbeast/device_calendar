@@ -135,6 +135,7 @@ public class SwiftDeviceCalendarPlugin: NSObject, FlutterPlugin, EKEventViewDele
     let availabilityArgument = "availability"
     let attendanceStatusArgument = "attendanceStatus"
     let eventStatusArgument = "eventStatus"
+    let isWriteOnlyArgument = "isWriteOnly"
     let validFrequencyTypes = [EKRecurrenceFrequency.daily, EKRecurrenceFrequency.weekly, EKRecurrenceFrequency.monthly, EKRecurrenceFrequency.yearly]
     
     var flutterResult : FlutterResult?
@@ -148,7 +149,7 @@ public class SwiftDeviceCalendarPlugin: NSObject, FlutterPlugin, EKEventViewDele
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         switch call.method {
         case requestPermissionsMethod:
-            requestPermissions(result)
+            requestPermissions(call, result)
         case hasPermissionsMethod:
             hasPermissions(result)
         case retrieveCalendarsMethod:
@@ -938,14 +939,34 @@ public class SwiftDeviceCalendarPlugin: NSObject, FlutterPlugin, EKEventViewDele
         }
     }
 
-    private func requestPermissions(_ result: @escaping FlutterResult) {
+    private func requestPermissions(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
+        let arguments = call.arguments as! Dictionary<String, AnyObject>
+        let isWriteOnly = arguments[isWriteOnlyArgument] as! Bool
+        
         if hasEventPermissions()  {
             result(true)
         }
-        eventStore.requestAccess(to: .event, completion: {
-            (accessGranted: Bool, _: Error?) in
-            result(accessGranted)
-        })
+        
+        var status = false
+        if #available(iOS 17.0, *) {
+            Task {
+                do {
+                    if (isWriteOnly) {
+                        status = try await eventStore.requestWriteOnlyAccessToEvents()
+                    } else {
+                        status = try await eventStore.requestFullAccessToEvents()
+                    }
+                    result(status)
+                } catch {
+                    result(false)
+                }
+            }
+        } else {
+            eventStore.requestAccess(to: .event, completion: {
+                (accessGranted: Bool, _: Error?) in
+                result(accessGranted)
+            })
+        }
     }
 }
 

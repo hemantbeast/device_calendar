@@ -18,8 +18,7 @@ import 'models/retrieve_events_params.dart';
 
 /// Provides functionality for working with device calendar(s)
 class DeviceCalendarPlugin {
-  static const MethodChannel channel =
-      MethodChannel(ChannelConstants.channelName);
+  static const MethodChannel channel = MethodChannel(ChannelConstants.channelName);
 
   static final DeviceCalendarPlugin _instance = DeviceCalendarPlugin.private();
 
@@ -37,9 +36,12 @@ class DeviceCalendarPlugin {
   ///
   /// Returns a [Result] indicating if calendar READ and WRITE permissions
   /// have (true) or have not (false) been granted
-  Future<Result<bool>> requestPermissions() async {
+  Future<Result<bool>> requestPermissions({bool isWriteOnly = false}) async {
     return _invokeChannelMethod(
       ChannelConstants.methodNameRequestPermissions,
+      arguments: () => {
+        'isWriteOnly': isWriteOnly,
+      },
     );
   }
 
@@ -91,29 +93,22 @@ class DeviceCalendarPlugin {
         _assertParameter(
           result,
           !((retrieveEventsParams?.eventIds?.isEmpty ?? true) &&
-              ((retrieveEventsParams?.startDate == null ||
-                      retrieveEventsParams?.endDate == null) ||
+              ((retrieveEventsParams?.startDate == null || retrieveEventsParams?.endDate == null) ||
                   (retrieveEventsParams?.startDate != null &&
                       retrieveEventsParams?.endDate != null &&
-                      (retrieveEventsParams != null &&
-                          retrieveEventsParams.startDate!
-                              .isAfter(retrieveEventsParams.endDate!))))),
+                      (retrieveEventsParams != null && retrieveEventsParams.startDate!.isAfter(retrieveEventsParams.endDate!))))),
           ErrorCodes.invalidArguments,
           ErrorMessages.invalidRetrieveEventsParams,
         );
       },
       arguments: () => <String, Object?>{
         ChannelConstants.parameterNameCalendarId: calendarId,
-        ChannelConstants.parameterNameStartDate:
-            retrieveEventsParams?.startDate?.millisecondsSinceEpoch,
-        ChannelConstants.parameterNameEndDate:
-            retrieveEventsParams?.endDate?.millisecondsSinceEpoch,
+        ChannelConstants.parameterNameStartDate: retrieveEventsParams?.startDate?.millisecondsSinceEpoch,
+        ChannelConstants.parameterNameEndDate: retrieveEventsParams?.endDate?.millisecondsSinceEpoch,
         ChannelConstants.parameterNameEventIds: retrieveEventsParams?.eventIds,
       },
       evaluateResponse: (rawData) => UnmodifiableListView(
-        json
-            .decode(rawData)
-            .map<Event>((decodedEvent) => Event.fromJson(decodedEvent)),
+        json.decode(rawData).map<Event>((decodedEvent) => Event.fromJson(decodedEvent)),
       ),
     );
   }
@@ -188,8 +183,7 @@ class DeviceCalendarPlugin {
         ChannelConstants.parameterNameEventId: eventId,
         ChannelConstants.parameterNameEventStartDate: startDate,
         ChannelConstants.parameterNameEventEndDate: endDate,
-        ChannelConstants.parameterNameFollowingInstances:
-            deleteFollowingInstances,
+        ChannelConstants.parameterNameFollowingInstances: deleteFollowingInstances,
       },
     );
   }
@@ -209,35 +203,26 @@ class DeviceCalendarPlugin {
         // Setting time to 0 for all day events
         if (event.allDay == true) {
           if (event.start != null) {
-            var dateStart = DateTime(event.start!.year, event.start!.month,
-                event.start!.day, 0, 0, 0);
+            var dateStart = DateTime(event.start!.year, event.start!.month, event.start!.day, 0, 0, 0);
             // allDay events on Android need to be at midnight UTC
             event.start = Platform.isAndroid
-                ? TZDateTime.utc(event.start!.year, event.start!.month,
-                    event.start!.day, 0, 0, 0)
-                : TZDateTime.from(dateStart,
-                    timeZoneDatabase.locations[event.start!.location.name]!);
+                ? TZDateTime.utc(event.start!.year, event.start!.month, event.start!.day, 0, 0, 0)
+                : TZDateTime.from(dateStart, timeZoneDatabase.locations[event.start!.location.name]!);
           }
           if (event.end != null) {
-            var dateEnd = DateTime(
-                event.end!.year, event.end!.month, event.end!.day, 0, 0, 0);
+            var dateEnd = DateTime(event.end!.year, event.end!.month, event.end!.day, 0, 0, 0);
             // allDay events on Android need to be at midnight UTC on the
             // day after the last day. For example, a 2-day allDay event on
             // Jan 1 and 2, should be from Jan 1 00:00:00 to Jan 3 00:00:00
             event.end = Platform.isAndroid
-                ? TZDateTime.utc(event.end!.year, event.end!.month,
-                        event.end!.day, 0, 0, 0)
-                    .add(const Duration(days: 1))
-                : TZDateTime.from(dateEnd,
-                    timeZoneDatabase.locations[event.end!.location.name]!);
+                ? TZDateTime.utc(event.end!.year, event.end!.month, event.end!.day, 0, 0, 0).add(const Duration(days: 1))
+                : TZDateTime.from(dateEnd, timeZoneDatabase.locations[event.end!.location.name]!);
           }
         }
 
         _assertParameter(
           result,
-          !(event.allDay == true && (event.calendarId?.isEmpty ?? true) ||
-              event.start == null ||
-              event.end == null),
+          !(event.allDay == true && (event.calendarId?.isEmpty ?? true) || event.start == null || event.end == null),
           ErrorCodes.invalidArguments,
           ErrorMessages.createOrUpdateEventInvalidArgumentsMessageAllDay,
         );
@@ -248,9 +233,7 @@ class DeviceCalendarPlugin {
               ((event.calendarId?.isEmpty ?? true) ||
                   event.start == null ||
                   event.end == null ||
-                  (event.start != null &&
-                      event.end != null &&
-                      event.start!.isAfter(event.end!)))),
+                  (event.start != null && event.end != null && event.start!.isAfter(event.end!)))),
           ErrorCodes.invalidArguments,
           ErrorMessages.createOrUpdateEventInvalidArgumentsMessage,
         );
@@ -290,12 +273,8 @@ class DeviceCalendarPlugin {
       },
       arguments: () => <String, Object?>{
         ChannelConstants.parameterNameCalendarName: calendarName,
-        ChannelConstants.parameterNameCalendarColor:
-            '0x${calendarColor?.value.toRadixString(16)}',
-        ChannelConstants.parameterNameLocalAccountName:
-            localAccountName?.isEmpty ?? true
-                ? 'Device Calendar'
-                : localAccountName
+        ChannelConstants.parameterNameCalendarColor: '0x${calendarColor?.value.toRadixString(16)}',
+        ChannelConstants.parameterNameLocalAccountName: localAccountName?.isEmpty ?? true ? 'Device Calendar' : localAccountName
       },
     );
   }
@@ -370,8 +349,7 @@ class DeviceCalendarPlugin {
     return result;
   }
 
-  void _parsePlatformExceptionAndUpdateResult<T>(
-      Exception? exception, Result<T> result) {
+  void _parsePlatformExceptionAndUpdateResult<T>(Exception? exception, Result<T> result) {
     if (exception == null) {
       result.errors.add(
         const ResultError(
@@ -388,16 +366,14 @@ class DeviceCalendarPlugin {
       result.errors.add(
         ResultError(
           ErrorCodes.platformSpecific,
-          sprintf(ErrorMessages.unknownDeviceExceptionTemplate,
-              [exception.code, exception.message]),
+          sprintf(ErrorMessages.unknownDeviceExceptionTemplate, [exception.code, exception.message]),
         ),
       );
     } else {
       result.errors.add(
         ResultError(
           ErrorCodes.generic,
-          sprintf(ErrorMessages.unknownDeviceGenericExceptionTemplate,
-              [exception.toString()]),
+          sprintf(ErrorMessages.unknownDeviceGenericExceptionTemplate, [exception.toString()]),
         ),
       );
     }
