@@ -1,38 +1,23 @@
-import 'package:flutter/material.dart';
 import 'package:device_calendar/device_calendar.dart';
+import 'package:flutter/material.dart';
 
 class RecurringEventDialog extends StatefulWidget {
-  final DeviceCalendarPlugin _deviceCalendarPlugin;
-  final Event _calendarEvent;
+  const RecurringEventDialog(this.deviceCalendarPlugin, this.calendarEvent, this.onLoadingStarted, this.onDeleteFinished, {super.key});
 
-  final VoidCallback _onLoadingStarted;
-  final Function(bool) _onDeleteFinished;
+  final DeviceCalendarPlugin deviceCalendarPlugin;
+  final Event calendarEvent;
 
-  const RecurringEventDialog(this._deviceCalendarPlugin, this._calendarEvent,
-      this._onLoadingStarted, this._onDeleteFinished,
-      {Key? key})
-      : super(key: key);
+  final VoidCallback onLoadingStarted;
+  final Function(bool) onDeleteFinished;
 
   @override
-  _RecurringEventDialogState createState() =>
-      _RecurringEventDialogState(_deviceCalendarPlugin, _calendarEvent,
-          onLoadingStarted: _onLoadingStarted,
-          onDeleteFinished: _onDeleteFinished);
+  State<RecurringEventDialog> createState() => _RecurringEventDialogState();
 }
 
 class _RecurringEventDialogState extends State<RecurringEventDialog> {
-  late DeviceCalendarPlugin _deviceCalendarPlugin;
-  late Event _calendarEvent;
-  VoidCallback? _onLoadingStarted;
-  Function(bool)? _onDeleteFinished;
-
-  _RecurringEventDialogState(
-      DeviceCalendarPlugin deviceCalendarPlugin, Event calendarEvent,
-      {VoidCallback? onLoadingStarted, Function(bool)? onDeleteFinished}) {
-    _deviceCalendarPlugin = deviceCalendarPlugin;
-    _calendarEvent = calendarEvent;
-    _onLoadingStarted = onLoadingStarted;
-    _onDeleteFinished = onDeleteFinished;
+  @override
+  void initState() {
+    super.initState();
   }
 
   @override
@@ -43,49 +28,48 @@ class _RecurringEventDialogState extends State<RecurringEventDialog> {
         SimpleDialogOption(
           onPressed: () async {
             Navigator.of(context).pop(true);
-            if (_onLoadingStarted != null) _onLoadingStarted!();
-            final deleteResult =
-                await _deviceCalendarPlugin.deleteEventInstance(
-                    _calendarEvent.calendarId,
-                    _calendarEvent.eventId,
-                    _calendarEvent.start?.millisecondsSinceEpoch,
-                    _calendarEvent.end?.millisecondsSinceEpoch,
-                    false);
-            if (_onDeleteFinished != null) {
-              _onDeleteFinished!(
-                  deleteResult.isSuccess && deleteResult.data != null);
-            }
+            widget.onLoadingStarted();
+
+            final deleteResult = await widget.deviceCalendarPlugin.deleteEventInstance(
+              widget.calendarEvent.calendarId,
+              widget.calendarEvent.eventId,
+              widget.calendarEvent.start?.millisecondsSinceEpoch,
+              widget.calendarEvent.end?.millisecondsSinceEpoch,
+              false,
+            );
+
+            widget.onDeleteFinished(deleteResult.isSuccess && deleteResult.data != null);
           },
           child: const Text('This instance only'),
         ),
         SimpleDialogOption(
           onPressed: () async {
             Navigator.of(context).pop(true);
-            if (_onLoadingStarted != null) _onLoadingStarted!();
-            final deleteResult =
-                await _deviceCalendarPlugin.deleteEventInstance(
-                    _calendarEvent.calendarId,
-                    _calendarEvent.eventId,
-                    _calendarEvent.start?.millisecondsSinceEpoch,
-                    _calendarEvent.end?.millisecondsSinceEpoch,
-                    true);
-            if (_onDeleteFinished != null) {
-              _onDeleteFinished!(
-                  deleteResult.isSuccess && deleteResult.data != null);
-            }
+            widget.onLoadingStarted();
+
+            final deleteResult = await widget.deviceCalendarPlugin.deleteEventInstance(
+              widget.calendarEvent.calendarId,
+              widget.calendarEvent.eventId,
+              widget.calendarEvent.start?.millisecondsSinceEpoch,
+              widget.calendarEvent.end?.millisecondsSinceEpoch,
+              true,
+            );
+
+            widget.onDeleteFinished(deleteResult.isSuccess && deleteResult.data != null);
           },
           child: const Text('This and following instances'),
         ),
         SimpleDialogOption(
           onPressed: () async {
             Navigator.of(context).pop(true);
-            if (_onLoadingStarted != null) _onLoadingStarted!();
-            final deleteResult = await _deviceCalendarPlugin.deleteEvent(
-                _calendarEvent.calendarId, _calendarEvent.eventId);
-            if (_onDeleteFinished != null) {
-              _onDeleteFinished!(
-                  deleteResult.isSuccess && deleteResult.data != null);
-            }
+            widget.onLoadingStarted();
+
+            final deleteResult = await widget.deviceCalendarPlugin.deleteEvent(
+              widget.calendarEvent.calendarId,
+              widget.calendarEvent.eventId,
+            );
+
+            widget.onDeleteFinished(deleteResult.isSuccess && deleteResult.data != null);
           },
           child: const Text('All instances'),
         ),

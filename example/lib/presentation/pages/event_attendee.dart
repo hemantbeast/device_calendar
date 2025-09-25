@@ -1,20 +1,19 @@
 import 'dart:io';
 
+import 'package:device_calendar/device_calendar.dart';
 import 'package:device_calendar_example/common/app_routes.dart';
 import 'package:flutter/material.dart';
-import 'package:device_calendar/device_calendar.dart';
 
 late DeviceCalendarPlugin _deviceCalendarPlugin;
 
 class EventAttendeePage extends StatefulWidget {
+  const EventAttendeePage({super.key, this.attendee, this.eventId});
+
   final Attendee? attendee;
   final String? eventId;
-  const EventAttendeePage({Key? key, this.attendee, this.eventId})
-      : super(key: key);
 
   @override
-  _EventAttendeePageState createState() =>
-      _EventAttendeePageState(attendee, eventId);
+  State<EventAttendeePage> createState() => _EventAttendeePageState();
 }
 
 class _EventAttendeePageState extends State<EventAttendeePage> {
@@ -26,16 +25,18 @@ class _EventAttendeePageState extends State<EventAttendeePage> {
   var _status = AndroidAttendanceStatus.None;
   String _eventId = '';
 
-  _EventAttendeePageState(Attendee? attendee, eventId) {
-    if (attendee != null) {
-      _attendee = attendee;
+  @override
+  void initState() {
+    super.initState();
+
+    if (widget.attendee != null) {
+      _attendee = widget.attendee;
       _nameController.text = _attendee!.name!;
       _emailAddressController.text = _attendee!.emailAddress!;
       _role = _attendee!.role!;
-      _status = _attendee!.androidAttendeeDetails?.attendanceStatus ??
-          AndroidAttendanceStatus.None;
+      _status = _attendee!.androidAttendeeDetails?.attendanceStatus ?? AndroidAttendanceStatus.None;
     }
-    _eventId = eventId;
+    _eventId = widget.eventId ?? '';
   }
 
   @override
@@ -49,9 +50,7 @@ class _EventAttendeePageState extends State<EventAttendeePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(_attendee != null
-            ? 'Edit attendee ${_attendee!.name}'
-            : 'Add an Attendee'),
+        title: Text(_attendee != null ? 'Edit attendee ${_attendee!.name}' : 'Add an Attendee'),
       ),
       body: Column(
         children: [
@@ -64,8 +63,7 @@ class _EventAttendeePageState extends State<EventAttendeePage> {
                   child: TextFormField(
                     controller: _nameController,
                     validator: (value) {
-                      if (_attendee?.isCurrentUser == false &&
-                          (value == null || value.isEmpty)) {
+                      if (_attendee?.isCurrentUser == false && (value == null || value.isEmpty)) {
                         return 'Please enter a name';
                       }
                       return null;
@@ -78,15 +76,12 @@ class _EventAttendeePageState extends State<EventAttendeePage> {
                   child: TextFormField(
                     controller: _emailAddressController,
                     validator: (value) {
-                      if (value == null ||
-                          value.isEmpty ||
-                          !value.contains('@')) {
+                      if (value == null || value.isEmpty || !value.contains('@')) {
                         return 'Please enter a valid email address';
                       }
                       return null;
                     },
-                    decoration:
-                        const InputDecoration(labelText: 'Email Address'),
+                    decoration: const InputDecoration(labelText: 'Email Address'),
                   ),
                 ),
                 ListTile(
@@ -111,12 +106,12 @@ class _EventAttendeePageState extends State<EventAttendeePage> {
                   child: ListTile(
                     onTap: () async {
                       _deviceCalendarPlugin = DeviceCalendarPlugin();
+                      var result = await _deviceCalendarPlugin.showiOSEventModal(_eventId);
 
-                      var result = await _deviceCalendarPlugin
-                          .showiOSEventModal(_eventId);
-                      Navigator.popUntil(
-                          context, ModalRoute.withName(AppRoutes.calendars));
-                      //TODO: finish calling and getting attendee details from iOS
+                      if (context.mounted) {
+                        Navigator.popUntil(context, ModalRoute.withName(AppRoutes.calendars));
+                        //TODO: finish calling and getting attendee details from iOS
+                      }
                     },
                     leading: const Icon(Icons.edit),
                     title: const Text('View / edit iOS attendance details'),
@@ -156,8 +151,7 @@ class _EventAttendeePageState extends State<EventAttendeePage> {
                       isOrganiser: _attendee?.isOrganiser ?? false,
                       isCurrentUser: _attendee?.isCurrentUser ?? false,
                       iosAttendeeDetails: _attendee?.iosAttendeeDetails,
-                      androidAttendeeDetails: AndroidAttendeeDetails.fromJson(
-                          {'attendanceStatus': _status.index}));
+                      androidAttendeeDetails: AndroidAttendeeDetails.fromJson({'attendanceStatus': _status.index}));
 
                   _emailAddressController.clear();
                 });

@@ -6,10 +6,10 @@ import 'package:flutter/services.dart';
 import 'calendar_events.dart';
 
 class CalendarsPage extends StatefulWidget {
-  const CalendarsPage({Key? key}) : super(key: key);
+  const CalendarsPage({super.key});
 
   @override
-  _CalendarsPageState createState() {
+  State<CalendarsPage> createState() {
     return _CalendarsPageState();
   }
 }
@@ -21,13 +21,10 @@ class _CalendarsPageState extends State<CalendarsPage> {
 
   List<Calendar> get _readOnlyCalendars => _calendars.where((c) => c.isReadOnly == true).toList();
 
-  _CalendarsPageState() {
-    _deviceCalendarPlugin = DeviceCalendarPlugin();
-  }
-
   @override
   void initState() {
     super.initState();
+    _deviceCalendarPlugin = DeviceCalendarPlugin();
     _retrieveCalendars();
   }
 

@@ -4,10 +4,10 @@ import 'package:device_calendar/device_calendar.dart';
 import 'package:flutter/material.dart';
 
 class CalendarAddPage extends StatefulWidget {
-  const CalendarAddPage({Key? key}) : super(key: key);
+  const CalendarAddPage({super.key});
 
   @override
-  _CalendarAddPageState createState() {
+  State<CalendarAddPage> createState() {
     return _CalendarAddPageState();
   }
 }
@@ -17,12 +17,14 @@ class _CalendarAddPageState extends State<CalendarAddPage> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   late DeviceCalendarPlugin _deviceCalendarPlugin;
 
-  AutovalidateMode _autovalidate = AutovalidateMode.disabled;
+  AutovalidateMode _autoValidate = AutovalidateMode.disabled;
   String _calendarName = '';
   ColorChoice? _colorChoice;
   String _localAccountName = '';
 
-  _CalendarAddPageState() {
+  @override
+  void initState() {
+    super.initState();
     _deviceCalendarPlugin = DeviceCalendarPlugin();
   }
 
@@ -34,7 +36,7 @@ class _CalendarAddPageState extends State<CalendarAddPage> {
         title: const Text('Create Calendar'),
       ),
       body: Form(
-        autovalidateMode: _autovalidate,
+        autovalidateMode: _autoValidate,
         key: _formKey,
         child: Container(
           padding: const EdgeInsets.all(10),
@@ -82,12 +84,13 @@ class _CalendarAddPageState extends State<CalendarAddPage> {
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
           final form = _formKey.currentState;
+
           if (form?.validate() == false) {
-            _autovalidate =
-                AutovalidateMode.always; // Start validating on every change.
+            _autoValidate = AutovalidateMode.always; // Start validating on every change.
             showInSnackBar('Please fix the errors in red before submitting.');
           } else {
             form?.save();
+
             var result = await _deviceCalendarPlugin.createCalendar(
               _calendarName,
               calendarColor: _colorChoice?.value,
@@ -95,11 +98,11 @@ class _CalendarAddPageState extends State<CalendarAddPage> {
             );
 
             if (result.isSuccess) {
-              Navigator.pop(context, true);
+              if (context.mounted) {
+                Navigator.pop(context, true);
+              }
             } else {
-              showInSnackBar(result.errors
-                  .map((err) => '[${err.errorCode}] ${err.errorMessage}')
-                  .join(' | '));
+              showInSnackBar(result.errors.map((err) => '[${err.errorCode}] ${err.errorMessage}').join(' | '));
             }
           }
         },
@@ -123,17 +126,7 @@ class _CalendarAddPageState extends State<CalendarAddPage> {
   }
 }
 
-enum ColorChoice {
-  Red,
-  Orange,
-  Yellow,
-  Green,
-  Blue,
-  Purple,
-  Brown,
-  Black,
-  White
-}
+enum ColorChoice { Red, Orange, Yellow, Green, Blue, Purple, Brown, Black, White }
 
 extension ColorChoiceExtension on ColorChoice {
   static Color _value(ColorChoice val) {

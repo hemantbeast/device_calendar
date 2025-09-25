@@ -71,7 +71,7 @@ class DeviceCalendarPlugin {
 
   /// Retrieves the events from the specified calendar
   ///
-  /// The `calendarId` paramter is the id of the calendar that plugin will return events for
+  /// The `calendarId` parameter is the id of the calendar that plugin will return events for
   /// The `retrieveEventsParams` parameter combines multiple properties that
   /// specifies conditions of the events retrieval. For instance, defining [RetrieveEventsParams.startDate]
   /// and [RetrieveEventsParams.endDate] will return events only happening in that time range
@@ -190,7 +190,7 @@ class DeviceCalendarPlugin {
 
   /// Creates or updates an event
   ///
-  /// The `event` paramter specifies how event data should be saved into the calendar
+  /// The `event` parameter specifies how event data should be saved into the calendar
   /// Always specify the [Event.calendarId], to inform the plugin in which calendar
   /// it should create or update the event.
   ///
@@ -273,7 +273,7 @@ class DeviceCalendarPlugin {
       },
       arguments: () => <String, Object?>{
         ChannelConstants.parameterNameCalendarName: calendarName,
-        ChannelConstants.parameterNameCalendarColor: '0x${calendarColor?.value.toRadixString(16)}',
+        ChannelConstants.parameterNameCalendarColor: '0x${calendarColor?.toARGB32().toRadixString(16)}',
         ChannelConstants.parameterNameLocalAccountName: localAccountName?.isEmpty ?? true ? 'Device Calendar' : localAccountName
       },
     );

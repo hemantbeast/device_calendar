@@ -6,8 +6,15 @@ import 'package:intl/intl.dart';
 import 'input_dropdown.dart';
 
 class DateTimePicker extends StatelessWidget {
-  const DateTimePicker({Key? key, this.labelText, this.selectedDate, this.selectedTime, this.selectDate, this.selectTime, this.enableTime = true})
-      : super(key: key);
+  const DateTimePicker({
+    super.key,
+    this.labelText,
+    this.selectedDate,
+    this.selectedTime,
+    this.selectDate,
+    this.selectTime,
+    this.enableTime = true,
+  });
 
   final String? labelText;
   final DateTime? selectedDate;
@@ -36,6 +43,7 @@ class DateTimePicker extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final valueStyle = Theme.of(context).textTheme.headlineMedium;
+
     return Row(
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
