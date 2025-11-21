@@ -3,6 +3,10 @@ description: A cross platform plugin for modifying calendars on the user's devic
 version: 4.3.2
 homepage: https://github.com/builttoroam/device_calendar/tree/master
 
+environment:
+  sdk: ">=3.8.0 <4.5.0"
+  flutter: ">=3.32.0"
+
 dependencies:
   flutter:
     sdk: flutter
@@ -24,7 +28,3 @@ flutter:
         pluginClass: DeviceCalendarPlugin
       ios:
         pluginClass: DeviceCalendarPlugin
-
-environment:
-  sdk: ">=3.2.3 <4.5.0"
-  flutter: ">=1.12.13"
